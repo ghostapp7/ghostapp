@@ -138,7 +138,7 @@
       <div class="api-ok" id="gl-api-ok">✓ API anahtarı kaydedildi</div>
       <div class="api-setup" id="gl-api-setup">
         <div class="api-setup-title">⚠️ Ücretsiz API Anahtarı Gerekli</div>
-        <div class="api-setup-desc">Google AI Studio'dan 1 saniyede ücretsiz anahtar al: <strong>aistudio.google.com</strong></div>
+        <div class="api-setup-desc">Google AI Studio'dan ücretsiz anahtar al: <strong>aistudio.google.com</strong></div>
         <div class="api-row">
           <input class="api-input" id="gl-key-input" type="text" placeholder="AIzaSy..." />
           <button class="api-save" onclick="saveKey()">Kaydet</button>
@@ -254,11 +254,20 @@ function updateNav(id) {
   }
 }
 
-// ── API ANAHTARI ──
+// ── API ANAHTARI KONTROLÜ ──
+// localStorage'dan anahtarı çekiyoruz
 let API_KEY = localStorage.getItem('ghost_gemini_key') || '';
 
+// Eğer anahtar boşluktan ibaretse veya "null" kelimesiyse temizle
+if (API_KEY.trim() === "" || API_KEY === "null") {
+  API_KEY = "";
+  localStorage.removeItem('ghost_gemini_key');
+}
+
 function refreshApiUI() {
-  const hasKey = !!API_KEY;
+  // Gerçek bir anahtar var mı kontrol et (boş değilse ve en az 10 karakterse)
+  const hasKey = API_KEY && API_KEY.trim().length > 10;
+  
   ['gl','ls'].forEach(prefix => {
     const setup = document.getElementById(prefix + '-api-setup');
     const ok    = document.getElementById(prefix + '-api-ok');
@@ -268,51 +277,49 @@ function refreshApiUI() {
 }
 
 function saveKey() {
-  const v = (document.getElementById('gl-key-input')?.value || 
-             document.getElementById('ls-key-input')?.value || '').trim();
-  if (!v || v.length < 10) return;
+  const glInput = document.getElementById('gl-key-input')?.value.trim();
+  const lsInput = document.getElementById('ls-key-input')?.value.trim();
+  const v = glInput || lsInput || '';
+
+  if (v.length < 10) {
+    alert("Lütfen geçerli bir API anahtarı girin.");
+    return;
+  }
+  
   API_KEY = v;
   localStorage.setItem('ghost_gemini_key', v);
+  alert("API anahtarı başarıyla kaydedildi!");
   refreshApiUI();
 }
 
-// ── GEMINI API ENTEGRASYONU (Ücretsiz ve Türkiye Destekli) ──
+// ── GEMINI API FONKSİYONU ──
 async function askGemini(prompt) {
-  if (!API_KEY) throw new Error('NO_KEY');
+  if (!API_KEY || API_KEY.length < 10) throw new Error('NO_KEY');
 
-  // OpenAI endpoint yerine direkt Google Gemini 1.5 Flash endpointini kullanıyoruz.
-  // Bu yöntem Türkiye'den erişimde genellikle sorun çıkarmaz.
   const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
   const res = await fetch(API_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{
-        parts: [{ text: prompt }]
-      }],
-      generationConfig: {
-        temperature: 0.8,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 800,
-      }
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 800 }
     })
   });
 
   if (!res.ok) {
     const err = await res.json();
-    if (err.error?.status === "PERMISSION_DENIED") throw new Error("REGION_ERROR");
-    throw new Error("API_ERROR: " + (err.error?.message || res.status));
+    if (err.error?.message.includes("API key not valid")) {
+       localStorage.removeItem('ghost_gemini_key');
+       API_KEY = "";
+       refreshApiUI();
+       throw new Error("INVALID_KEY");
+    }
+    throw new Error("API_ERROR");
   }
 
   const data = await res.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  
-  if (!text) throw new Error("BOŞ_YANIT");
-  return text;
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "Yanıt alınamadı.";
 }
 
 function showError(id, msg) {
@@ -330,7 +337,7 @@ document.getElementById('gl-story').addEventListener('input', function() {
 });
 
 async function analyzeGhost() {
-  if (!API_KEY) { refreshApiUI(); return; }
+  if (!API_KEY) { navigate('ghostlog'); refreshApiUI(); return; }
   const story = document.getElementById('gl-story').value.trim();
   if (story.length < 15) {
     showError('gl-error', '✏️ Biraz daha anlat — en az 15 karakter yaz.');
@@ -341,90 +348,59 @@ async function analyzeGhost() {
   const btn = document.getElementById('gl-btn');
   const resultBox = document.getElementById('gl-result');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div>';
+  btn.innerHTML = '<div class="spinner"></div> Analiz ediliyor...';
   resultBox.style.display = 'none';
 
   try {
-    const prompt = `Sen eğlenceli, biraz dramatik ama dürüst bir ghosting uzmanısın. Türkçe yaz. Kısa ve etkili ol.
-
-Kullanıcının ghostlanma hikayesi: "${story}"
-
-Şu başlıklarla analiz yaz:
-
-👻 GHOSTLANMA SEBEBİ
-2-3 cümle. Eğlenceli ama gerçekçi. Acı ama komik tonda.
-
-📊 GERİ YAZMA İHTİMALİ
-%XX — ve kısa bir yorum (1 cümle).
-
-🚩 RED FLAG ANALİZİ
-• [YÜKSEK/ORTA/DÜŞÜK] Red flag açıklaması
-• [YÜKSEK/ORTA/DÜŞÜK] Red flag açıklaması
-• [YÜKSEK/ORTA/DÜŞÜK] Red flag açıklaması`;
+    const prompt = `Sen eğlenceli, biraz dramatik ama dürüst bir ghosting uzmanısın. Türkçe yaz.
+    Kullanıcının ghostlanma hikayesi: "${story}"
+    Lütfen şu formatta cevap ver:
+    👻 GHOSTLANMA SEBEBİ: (Kısa yorum)
+    📊 GERİ YAZMA İHTİMALİ: %... (Yorum)
+    🚩 RED FLAGLAR: (3 madde)`;
 
     const result = await askGemini(prompt);
     resultBox.textContent = result;
     resultBox.style.display = 'block';
-    resultBox.classList.remove('fade-up');
-    void resultBox.offsetWidth;
     resultBox.classList.add('fade-up');
   } catch(e) {
-    let msg = '❌ Bir hata oluştu, tekrar dene.';
-    if (e.message === 'NO_KEY') msg = '⚠️ Önce API anahtarını kaydet.';
-    else if (e.message === 'REGION_ERROR') msg = '🌍 VPN kullanarak tekrar dene veya başka bir anahtar kullan.';
-    else if (e.message.includes('API_KEY')) msg = '🔑 API anahtarın geçersiz. Kontrol et.';
+    let msg = '❌ Hata oluştu.';
+    if (e.message === 'NO_KEY' || e.message === 'INVALID_KEY') msg = '🔑 Geçersiz veya boş API anahtarı! Lütfen yukarıdaki kutuya anahtarı girip Kaydet deyin.';
     showError('gl-error', msg);
   }
-
   btn.disabled = false;
   btn.innerHTML = 'YENİDEN ANALİZ ET 👻';
 }
 
 // ── LAST SEEN SIMULATOR ──
 async function simulateLastSeen() {
-  if (!API_KEY) { refreshApiUI(); return; }
+  if (!API_KEY) { navigate('lastseen'); refreshApiUI(); return; }
   const msg = document.getElementById('ls-msg').value.trim();
-  if (!msg) {
-    showError('ls-error', '✏️ Bir mesaj yaz önce.');
-    return;
-  }
+  if (!msg) { showError('ls-error', '✏️ Bir mesaj yaz önce.'); return; }
   hideError('ls-error');
 
   const btn = document.getElementById('ls-btn');
   const resultBox = document.getElementById('ls-result');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner dark"></div>';
+  btn.innerHTML = '<div class="spinner dark"></div> Bekleniyor...';
   resultBox.style.display = 'none';
 
   try {
-    const prompt = `Sen bir ghosting simülatörüsün. Türkçe yaz.
-
-Bir kişi seni ghostluyor — yani artık cevap vermiyor, iletişimi kesiyor. Bu kişi eğer cevap yazmış olsaydı ne yazardı?
-
-Kullanıcının gönderdiği mesaj: "${msg}"
-
-Önce tırnak işareti içinde ghostlayan kişinin vereceği cevabı yaz. Cevap soğuk, mesafeli, kısa, belirsiz veya bahaneci olmalı.
-Sonra bir satır boşluk bırak.
-🔍 işaretiyle bu cevabın gerçekte ne anlama geldiğini 1-2 cümleyle eğlenceli yorumla.`;
+    const prompt = `Ghosting simülatörü ol. Kullanıcının şu mesajına ghostlayan kişi ne cevap verirdi? "${msg}"
+    Önce soğuk bir cevap yaz, sonra 🔍 işaretiyle gerçek anlamını açıkla.`;
 
     const result = await askGemini(prompt);
     resultBox.textContent = result;
     resultBox.style.display = 'block';
-    resultBox.classList.remove('fade-up');
-    void resultBox.offsetWidth;
     resultBox.classList.add('fade-up');
   } catch(e) {
-    let msg = '❌ Bir hata oluştu, tekrar dene.';
-    if (e.message === 'NO_KEY') msg = '⚠️ Önce API anahtarını kaydet.';
-    else if (e.message === 'REGION_ERROR') msg = '🌍 Bölgesel bir kısıtlama oluştu. VPN deneyebilirsin.';
-    showError('ls-error', msg);
+    showError('ls-error', '❌ API hatası. Anahtarı kontrol edin.');
   }
-
   btn.disabled = false;
   btn.innerHTML = 'TEKRAR DENE 🕐';
 }
 
-// ── PERSONA TEST (Local JS, API gerektirmez) ──
+// ── PERSONA TEST (API Gerektirmez) ──
 const questions = [
   { q: 'Birinden gelen mesajı okuyunca ne yaparsın?', opts: ['Hemen cevap yazarım','Biraz bekler sonra yazarım','Cevap yazacağım diye düşünürüm, yazmam','Okumadıysam daha iyi'], scores: [0,1,2,3] },
   { q: 'Sana ilgi gösteren biri sıkıcı gelmeye başlarsa?', opts: ['Nazikçe söylerim','Yavaş yavaş azaltırım','Yokmuşum gibi davranırım','Blok hayatı kolaylaştırır'], scores: [0,1,2,3] },
@@ -437,10 +413,8 @@ const questions = [
   { q: 'Kaç mesajın okunmamış olabilir şu an?', opts: ['0','1–5','10–20','Saymıyorum bile'], scores: [0,1,2,3] },
   { q: 'Ghosting hakkında ne düşünüyorsun?', opts: ['Çok kötü bir şey','Bazen gerekli olabilir','Herkese olur','Ben yaptım mı? Bilmiyorum.'], scores: [0,1,2,3] },
 ];
-
 let answers = new Array(10).fill(null);
 let personaBuilt = false;
-
 function buildPersonaTest() {
   personaBuilt = true;
   const area = document.getElementById('persona-test-area');
@@ -452,61 +426,42 @@ function buildPersonaTest() {
       ${q.opts.map((o,j) => `<div class="opt" id="opt-${i}-${j}" onclick="selectOpt(${i},${j})">${o}</div>`).join('')}
     </div>`;
   });
-  html += `<button class="btn btn-red" id="persona-submit" onclick="submitPersona()" disabled style="margin-bottom:8px">SONUCU GÖR 🧬</button><div style="height:16px"></div>`;
+  html += `<button class="btn btn-red" id="persona-submit" onclick="submitPersona()" disabled style="margin-bottom:8px">SONUCU GÖR 🧬</button>`;
   area.innerHTML = html;
 }
-
 function selectOpt(qIdx, optIdx) {
-  if (answers[qIdx] !== null) {
-    document.getElementById(`opt-${qIdx}-${answers[qIdx]}`)?.classList.remove('selected');
-  }
+  if (answers[qIdx] !== null) document.getElementById(`opt-${qIdx}-${answers[qIdx]}`)?.classList.remove('selected');
   answers[qIdx] = optIdx;
   document.getElementById(`opt-${qIdx}-${optIdx}`).classList.add('selected');
   const answered = answers.filter(a => a !== null).length;
   document.getElementById('prog-bar').style.width = (answered / 10 * 100) + '%';
   document.getElementById('persona-submit').disabled = answered < 10;
 }
-
 function submitPersona() {
-  const total = answers.reduce((sum, a, i) => sum + (a !== null ? questions[i].scores[a] : 0), 0);
-  let emoji, type, color, borderColor, desc;
-  if (total <= 8) {
-    emoji='😇'; type='Masum Ghostlanan'; color='var(--teal)'; borderColor='rgba(32,201,160,0.15)';
-    desc='Sen kesinlikle ghostlanan tarafsın. Telefonu elinde tutup bekleyen, okundu bilgisini 10 kere kontrol eden taraf sensin. Üzülme — bu senin dürüstlüğünün ve empatin işareti. Ama artık biraz "hayalet enerjisi" öğrenme vakti gelebilir. 👀';
-  } else if (total <= 16) {
-    emoji='🫥'; type='Duruma Göre Kaybolur'; color='var(--orange)'; borderColor='rgba(255,159,28,0.12)';
-    desc='Ne tam ghostlayan ne tam ghostlanan — ortadasın. Duruma göre kaybolan, duruma göre cevap veren birisin. Gri alan denen şey tam bu. Farkında olmak zaten ilk adım sayılır. 🫶';
-  } else if (total <= 22) {
-    emoji='👻'; type='Kronik Ghostlayan'; color='var(--purple-light)'; borderColor='rgba(124,92,255,0.15)';
-    desc='Bak, kendine dürüst olmak zordur — ama tebrikler, bunu başardın. Sen zaman zaman hayaleti oynayan tarafsın. Belki savunma mekanizması, belki tembellik, belki nasıl bitirsem bilememek. Her neyse, en azından şimdi biliyorsun. 💜';
-  } else {
-    emoji='💀'; type='Efsane Hayalet'; color='var(--red)'; borderColor='rgba(255,77,109,0.15)';
-    desc='Tebrikler, sen bir efsanesin. İnsanlar muhtemelen seni "kaybolma ustası" olarak tanımlıyor. Gelen mesajlar sende kaygı yaratıyor olabilir — bu anlaşılır. Ama şunu düşün: bir "hayır" demek, haftalarca sessiz kalmaktan çok daha merhametli. 🌹';
-  }
+  const total = answers.reduce((sum, a, i) => sum + questions[i].scores[a], 0);
+  let emoji='😇', type='Masum', color='var(--teal)', desc='Sen ghostlanan tarafsın.';
+  if (total > 8 && total <= 16) { emoji='🫥'; type='Karışık'; color='var(--orange)'; desc='Duruma göre kayboluyorsun.'; }
+  else if (total > 16 && total <= 22) { emoji='👻'; type='Kronik'; color='var(--purple-light)'; desc='Hayaleti oynamayı seviyorsun.'; }
+  else if (total > 22) { emoji='💀'; type='Efsane'; color='var(--red)'; desc='Tam bir hayalet ustasısın.'; }
+  
   document.getElementById('persona-test-area').style.display = 'none';
   const ra = document.getElementById('persona-result-area');
   ra.style.display = 'block';
   ra.innerHTML = `<div class="result-screen fade-up">
     <div class="result-emoji-big">${emoji}</div>
     <div class="result-type" style="color:${color}">${type}</div>
-    <div class="result-desc-box" style="border-color:${borderColor};background:${borderColor}">${desc}</div>
-    <div class="result-score">Puan: ${total} / 30</div>
-    <button class="btn btn-outline" onclick="resetPersona()">Testi Tekrarla</button>
+    <div class="result-desc-box">${desc}</div>
+    <button class="btn btn-outline" onclick="resetPersona()">Tekrarla</button>
   </div>`;
 }
-
 function resetPersona() {
-  answers = new Array(10).fill(null);
-  personaBuilt = false;
+  answers = new Array(10).fill(null); personaBuilt = false;
   document.getElementById('persona-test-area').style.display = 'block';
-  document.getElementById('persona-test-area').innerHTML = '';
   document.getElementById('persona-result-area').style.display = 'none';
-  document.getElementById('persona-result-area').innerHTML = '';
   buildPersonaTest();
-  document.getElementById('persona-scroll').scrollTop = 0;
 }
 
-// ── BAŞLANGIÇ ──
+// BAŞLANGIÇ
 refreshApiUI();
 </script>
 </body>
