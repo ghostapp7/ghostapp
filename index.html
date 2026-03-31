@@ -73,7 +73,6 @@
   .q-num { font-size: 10px; color: var(--purple); font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; }
   .q-text { font-size: 14px; color: var(--text); font-weight: 500; line-height: 1.5; margin-bottom: 12px; }
   .opt { padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border); background: #111118; font-size: 13px; color: var(--text3); cursor: pointer; margin-bottom: 7px; transition: all 0.15s; -webkit-user-select: none; user-select: none; }
-  .opt:last-child { margin-bottom: 0; }
   .opt.selected { background: var(--purple-dim); border-color: var(--purple); color: var(--purple-light); }
   .opt:active { transform: scale(0.98); }
   .progress-wrap { background: var(--border); height: 4px; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
@@ -97,7 +96,6 @@
 <body>
 <div id="app">
 
-  <!-- HOME -->
   <div id="home" class="screen active">
     <div class="home-header">
       <div class="home-logo">Ghost<span>App</span></div>
@@ -131,7 +129,6 @@
     </div>
   </div>
 
-  <!-- GHOST LOG -->
   <div id="ghostlog" class="screen">
     <div class="topbar">
       <div class="back-btn" onclick="goBack()">←</div>
@@ -140,10 +137,10 @@
     <div class="scroll-area">
       <div class="api-ok" id="gl-api-ok">✓ API anahtarı kaydedildi</div>
       <div class="api-setup" id="gl-api-setup">
-        <div class="api-setup-title">⚠️ API Anahtarı Gerekli</div>
-        <div class="api-setup-desc">AI analizini kullanmak için OpenAI API anahtarını gir. Ücretsiz almak için: <strong>aistudio.google.com</strong> → Get API Key → Create API Key</div>
+        <div class="api-setup-title">⚠️ Ücretsiz API Anahtarı Gerekli</div>
+        <div class="api-setup-desc">Google AI Studio'dan 1 saniyede ücretsiz anahtar al: <strong>aistudio.google.com</strong></div>
         <div class="api-row">
-          <input class="api-input" id="gl-key-input" type="text" placeholder="sk-..." />
+          <input class="api-input" id="gl-key-input" type="text" placeholder="AIzaSy..." />
           <button class="api-save" onclick="saveKey()">Kaydet</button>
         </div>
       </div>
@@ -158,7 +155,6 @@
     </div>
   </div>
 
-  <!-- LAST SEEN -->
   <div id="lastseen" class="screen">
     <div class="topbar">
       <div class="back-btn" onclick="goBack()">←</div>
@@ -167,10 +163,10 @@
     <div class="scroll-area">
       <div class="api-ok" id="ls-api-ok">✓ API anahtarı kaydedildi</div>
       <div class="api-setup" id="ls-api-setup">
-        <div class="api-setup-title">⚠️ API Anahtarı Gerekli</div>
-        <div class="api-setup-desc">AI simülasyonu için OpenAI API anahtarını gir. Ücretsiz: <strong>aistudio.google.com</strong></div>
+        <div class="api-setup-title">⚠️ Ücretsiz API Anahtarı Gerekli</div>
+        <div class="api-setup-desc">AI simülasyonu için ücretsiz Gemini anahtarı: <strong>aistudio.google.com</strong></div>
         <div class="api-row">
-          <input class="api-input" id="ls-key-input" type="text" placeholder="sk-..." />
+          <input class="api-input" id="ls-key-input" type="text" placeholder="AIzaSy..." />
           <button class="api-save" onclick="saveKey()">Kaydet</button>
         </div>
       </div>
@@ -184,7 +180,6 @@
     </div>
   </div>
 
-  <!-- PERSONA TEST -->
   <div id="persona" class="screen">
     <div class="topbar">
       <div class="back-btn" onclick="goBack()">←</div>
@@ -196,7 +191,6 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAV -->
   <div class="bottom-nav">
     <div class="nav-item active" id="nav-home" onclick="navigate('home')">
       <div class="nav-icon">🏠</div>
@@ -274,7 +268,7 @@ function refreshApiUI() {
 }
 
 function saveKey() {
-  const v = (document.getElementById('gl-key-input')?.value ||
+  const v = (document.getElementById('gl-key-input')?.value || 
              document.getElementById('ls-key-input')?.value || '').trim();
   if (!v || v.length < 10) return;
   API_KEY = v;
@@ -282,36 +276,42 @@ function saveKey() {
   refreshApiUI();
 }
 
-// ── PROXY ÜZERINDEN GEMİNİ ──
-const PROXY = 'https://ghost-proxy.begumutku7.workers.dev/';
-
+// ── GEMINI API ENTEGRASYONU (Ücretsiz ve Türkiye Destekli) ──
 async function askGemini(prompt) {
   if (!API_KEY) throw new Error('NO_KEY');
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  // OpenAI endpoint yerine direkt Google Gemini 1.5 Flash endpointini kullanıyoruz.
+  // Bu yöntem Türkiye'den erişimde genellikle sorun çıkarmaz.
+  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+  const res = await fetch(API_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + API_KEY
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "user", content: prompt }
-      ]
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
+      generationConfig: {
+        temperature: 0.8,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 800,
+      }
     })
   });
 
   if (!res.ok) {
     const err = await res.json();
+    if (err.error?.status === "PERMISSION_DENIED") throw new Error("REGION_ERROR");
     throw new Error("API_ERROR: " + (err.error?.message || res.status));
   }
 
   const data = await res.json();
-
-  const text = data.choices?.[0]?.message?.content;
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  
   if (!text) throw new Error("BOŞ_YANIT");
-
   return text;
 }
 
@@ -371,8 +371,8 @@ Kullanıcının ghostlanma hikayesi: "${story}"
   } catch(e) {
     let msg = '❌ Bir hata oluştu, tekrar dene.';
     if (e.message === 'NO_KEY') msg = '⚠️ Önce API anahtarını kaydet.';
+    else if (e.message === 'REGION_ERROR') msg = '🌍 VPN kullanarak tekrar dene veya başka bir anahtar kullan.';
     else if (e.message.includes('API_KEY')) msg = '🔑 API anahtarın geçersiz. Kontrol et.';
-    else if (e.message.includes('PROXY_ERROR')) msg = '🌐 Sunucuya ulaşılamadı. İnternet bağlantını kontrol et.';
     showError('gl-error', msg);
   }
 
@@ -416,7 +416,7 @@ Sonra bir satır boşluk bırak.
   } catch(e) {
     let msg = '❌ Bir hata oluştu, tekrar dene.';
     if (e.message === 'NO_KEY') msg = '⚠️ Önce API anahtarını kaydet.';
-    else if (e.message.includes('PROXY_ERROR')) msg = '🌐 Sunucuya ulaşılamadı.';
+    else if (e.message === 'REGION_ERROR') msg = '🌍 Bölgesel bir kısıtlama oluştu. VPN deneyebilirsin.';
     showError('ls-error', msg);
   }
 
@@ -424,7 +424,7 @@ Sonra bir satır boşluk bırak.
   btn.innerHTML = 'TEKRAR DENE 🕐';
 }
 
-// ── PERSONA TEST ──
+// ── PERSONA TEST (Local JS, API gerektirmez) ──
 const questions = [
   { q: 'Birinden gelen mesajı okuyunca ne yaparsın?', opts: ['Hemen cevap yazarım','Biraz bekler sonra yazarım','Cevap yazacağım diye düşünürüm, yazmam','Okumadıysam daha iyi'], scores: [0,1,2,3] },
   { q: 'Sana ilgi gösteren biri sıkıcı gelmeye başlarsa?', opts: ['Nazikçe söylerim','Yavaş yavaş azaltırım','Yokmuşum gibi davranırım','Blok hayatı kolaylaştırır'], scores: [0,1,2,3] },
