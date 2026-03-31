@@ -635,11 +635,11 @@ function saveApiKey() {
 // ============ GEMINI API ============
 async function askGemini(prompt) {
   if (!API_KEY) throw new Error('API anahtarı yok');
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-  const res = await fetch(url, {
+  const PROXY = 'https://ghost-proxy.begumutku7.workers.dev/';
+  const res = await fetch(PROXY, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    body: JSON.stringify({ apiKey: API_KEY, prompt: prompt })
   });
   if (!res.ok) {
     const err = await res.json();
