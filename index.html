@@ -3,138 +3,187 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="GhostApp">
-<meta name="theme-color" content="#0a0a0f">
-<title>GhostApp 👻</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>GhostApp 👻 - Fix Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
-    --bg: #0a0a0f; --surface: #16161f; --border: #1e1e2e; --border2: #2a2240;
-    --text: #ffffff; --text2: #c0c0e0; --text3: #44445a; --text4: #333348;
-    --purple: #7c5cff; --purple-dim: #1a1232; --purple-light: #9f7fff;
-    --teal: #20c9a0; --teal-dim: #0a2520;
-    --red: #ff4d6d; --red-dim: #2a1020;
-    --orange: #ff9f1c; --orange-dim: #251508;
+    --bg: #0a0a0f; --surface: #16161f; --border: #1e1e2e;
+    --text: #ffffff; --text2: #c0c0e0; --text3: #44445a;
+    --purple: #7c5cff; --teal: #20c9a0; --red: #ff4d6d; --orange: #ff9f1c;
   }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; -webkit-font-smoothing: antialiased; }
-  #app { height: 100dvh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; overflow: hidden; }
-  .screen { position: absolute; inset: 0; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); background: var(--bg); overflow: hidden; }
-  .screen.active { transform: translateX(0); }
-  .screen.exit { transform: translateX(-30%); }
-  .scroll-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 20px 100px; }
-  .scroll-area::-webkit-scrollbar { display: none; }
-  .topbar { display: flex; align-items: center; padding: 52px 20px 16px; gap: 12px; flex-shrink: 0; background: var(--bg); padding-top: max(52px, env(safe-area-inset-top, 0px) + 12px); }
-  .back-btn { width: 36px; height: 36px; background: var(--surface); border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; flex-shrink: 0; }
-  .topbar-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-  #home { transform: translateX(0); }
-  .home-header { padding: 60px 24px 32px; flex-shrink: 0; padding-top: max(60px, env(safe-area-inset-top, 0px) + 20px); }
-  .home-logo { font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
-  .home-logo span { color: var(--purple); }
-  .home-sub { color: var(--text3); font-size: 14px; margin-top: 8px; }
-  .home-cards { padding: 0 20px; display: flex; flex-direction: column; gap: 14px; }
-  .menu-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: transform 0.15s; -webkit-user-select: none; user-select: none; }
-  .menu-card:active { transform: scale(0.97); }
-  .menu-icon-wrap { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
-  .menu-info { flex: 1; }
-  .menu-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
-  .menu-desc { font-size: 12px; color: var(--text3); margin-top: 3px; }
-  .menu-arrow { font-size: 18px; color: var(--text4); }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
-  .card-label { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-  .label-dot { width: 6px; height: 6px; border-radius: 50%; }
-  textarea { width: 100%; background: #111118; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; color: var(--text2); font-size: 14px; font-family: 'DM Sans', sans-serif; resize: none; outline: none; line-height: 1.6; transition: border-color 0.2s; -webkit-appearance: none; }
-  textarea:focus { border-color: var(--purple); }
-  textarea::placeholder { color: var(--text4); }
-  .btn { width: 100%; padding: 15px; border-radius: 14px; border: none; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-  .btn-purple { background: var(--purple); color: #fff; }
-  .btn-teal { background: var(--teal); color: #000; }
-  .btn-red { background: var(--red); color: #fff; }
-  .btn-outline { background: transparent; border: 1px solid var(--purple); color: var(--purple-light); }
-  .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
-  .spinner.dark { border-color: rgba(0,0,0,0.2); border-top-color: #000; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .result-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 18px; margin-top: 16px; color: var(--text2); font-size: 14px; line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
-  .char-count { font-size: 11px; color: var(--text4); text-align: right; margin-top: 5px; }
-  .error-msg { background: var(--red-dim); border: 1px solid var(--red); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 13px; color: var(--red); line-height: 1.6; display: none; }
-  .api-setup { background: var(--orange-dim); border: 1px solid var(--orange); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
-  .api-setup-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; color: var(--orange); margin-bottom: 6px; }
-  .api-setup-desc { font-size: 12px; color: #cc7a00; line-height: 1.6; margin-bottom: 10px; }
-  .api-row { display: flex; gap: 8px; }
-  .api-input { flex: 1; background: #111108; border: 1px solid var(--orange); border-radius: 10px; padding: 10px 12px; color: var(--text2); font-size: 12px; font-family: 'DM Sans', sans-serif; outline: none; -webkit-appearance: none; }
-  .api-save { padding: 10px 14px; background: var(--orange); color: #000; border: none; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; font-family: 'Syne', sans-serif; white-space: nowrap; }
-  .api-ok { background: #0a2010; border: 1px solid var(--teal); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: var(--teal); display: none; }
-  .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
-  .q-num { font-size: 10px; color: var(--purple); font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; }
-  .q-text { font-size: 14px; color: var(--text); font-weight: 500; line-height: 1.5; margin-bottom: 12px; }
-  .opt { padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border); background: #111118; font-size: 13px; color: var(--text3); cursor: pointer; margin-bottom: 7px; transition: all 0.15s; -webkit-user-select: none; user-select: none; }
-  .opt.selected { background: var(--purple-dim); border-color: var(--purple); color: var(--purple-light); }
-  .opt:active { transform: scale(0.98); }
-  .progress-wrap { background: var(--border); height: 4px; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
-  .progress-fill { height: 100%; background: var(--purple); border-radius: 4px; transition: width 0.4s ease; }
-  .result-screen { display: flex; flex-direction: column; align-items: center; padding: 32px 4px; text-align: center; }
-  .result-emoji-big { font-size: 72px; margin-bottom: 16px; }
-  .result-type { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 20px; line-height: 1.2; }
-  .result-desc-box { border-radius: 16px; padding: 20px; border: 1px solid; margin-bottom: 16px; font-size: 14px; line-height: 1.8; color: var(--text2); text-align: left; }
-  .result-score { font-size: 12px; color: var(--text3); margin-bottom: 24px; }
-  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(10,10,15,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: max(14px, env(safe-area-inset-bottom, 0px) + 8px); z-index: 100; }
-  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 12px; -webkit-user-select: none; user-select: none; min-width: 60px; }
-  .nav-icon { font-size: 20px; }
-  .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; transition: color 0.2s; }
-  .nav-item.active .nav-label { color: var(--purple); }
-  .nav-item.inactive .nav-label { color: var(--text4); }
-  .nav-dot { width: 4px; height: 4px; background: var(--purple); border-radius: 50%; }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-  .fade-up { animation: fadeUp 0.35s ease forwards; }
-  .reset-api-btn { font-size: 10px; color: var(--text4); text-decoration: underline; background: none; border: none; margin-top: 10px; cursor: pointer; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; }
+  #app { height: 100dvh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; }
+  .screen { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bg); }
+  .screen.active { display: flex; }
+  .scroll-area { flex: 1; overflow-y: auto; padding: 20px 20px 100px; }
+  .topbar { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; }
+  .back-btn { width: 35px; height: 35px; background: var(--surface); border-radius: 50%; border: 1px solid var(--border); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  
+  /* Kartlar ve Menü */
+  .menu-card { background: var(--surface); border: 1px solid var(--border); border-radius: 15px; padding: 20px; margin: 10px 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 15px; padding: 15px; margin-bottom: 15px; }
+  
+  /* API Kurulum Alanı - Önemli */
+  #api-setup-container { background: #1a1505; border: 1px solid var(--orange); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+  .api-input { width: 100%; background: #000; border: 1px solid var(--orange); padding: 12px; color: white; border-radius: 8px; margin-bottom: 10px; font-size: 14px; }
+  
+  textarea { width: 100%; background: #000; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white; resize: none; }
+  .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; margin-top: 10px; font-family: 'Syne'; }
+  .btn-purple { background: var(--purple); color: white; }
+  .btn-teal { background: var(--teal); color: black; }
+  .error-msg { background: #2a1010; color: var(--red); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 12px; display: none; border: 1px solid var(--red); }
+  .result-box { background: #10101a; border: 1px solid var(--purple); padding: 15px; border-radius: 12px; margin-top: 15px; line-height: 1.6; white-space: pre-wrap; display: none; }
+  
+  /* Bottom Nav */
+  .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: #050505; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--border); }
+  .nav-item { color: var(--text3); font-size: 11px; text-align: center; cursor: pointer; }
+  .nav-item.active { color: var(--purple); }
 </style>
 </head>
 <body>
-<div id="app">
 
+<div id="app">
   <div id="home" class="screen active">
-    <div class="home-header">
-      <div class="home-logo">Ghost<span>App</span></div>
-      <div class="home-sub">Ghostlanma analizin için buradayız 👻</div>
+    <div style="padding: 60px 25px 20px;">
+        <h1 style="font-family:'Syne'; font-size: 40px;">GhostApp 👻</h1>
+        <p style="color:var(--text3)">Hafıza sıfırlandı, yeniden başla.</p>
     </div>
-    <div class="home-cards">
-      <div class="menu-card" onclick="navigate('ghostlog')">
-        <div class="menu-icon-wrap" style="background:rgba(124,92,255,0.12)">👻</div>
-        <div class="menu-info">
-          <div class="menu-title">GhostLog</div>
-          <div class="menu-desc">Hikayeni anlat, AI analiz etsin</div>
-        </div>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-card" onclick="navigate('lastseen')">
-        <div class="menu-icon-wrap" style="background:rgba(32,201,160,0.12)">🕐</div>
-        <div class="menu-info">
-          <div class="menu-title">Last Seen Simulator</div>
-          <div class="menu-desc">Ne cevap yazardı acaba?</div>
-        </div>
-        <div class="menu-arrow">›</div>
-      </div>
-      <div class="menu-card" onclick="navigate('persona')">
-        <div class="menu-icon-wrap" style="background:rgba(255,77,109,0.12)">🧬</div>
-        <div class="menu-info">
-          <div class="menu-title">Ghost Persona Test</div>
-          <div class="menu-desc">Ghostlayan mısın, ghostlanan mı?</div>
-        </div>
-        <div class="menu-arrow">›</div>
-      </div>
-    </div>
+    <div class="menu-card" onclick="navigate('ghostlog')"><span>👻</span> <div><b>GhostLog</b><br><small>Analiz Et</small></div></div>
+    <div class="menu-card" onclick="navigate('lastseen')"><span>🕐</span> <div><b>Last Seen</b><br><small>Simüle Et</small></div></div>
   </div>
 
   <div id="ghostlog" class="screen">
-    <div class="topbar">
-      <div class="back-btn" onclick="goBack()">←</div>
-      <div class="topbar-title" style="color:var(--purple)">GhostLog 👻</div>
-    </div>
+    <div class="topbar"><div class="back-btn" onclick="navigate('home')">←</div> <h2 style="font-family:'Syne'">GhostLog</h2></div>
     <div class="scroll-area">
-      <div class="api-ok" id="gl-api-ok">✓ API Anahtarı Kayıtlı 
-        <button class="reset
+      <div id="api-setup-container">
+        <p style="font-size:12px; color:var(--orange); margin-bottom:8px;">⚠️ Google Gemini API Key Girin:</p>
+        <input type="text" id="api-key-field" class="api-input" placeholder="AIzaSy... ile başlar">
+        <button class="btn btn-teal" style="padding:8px" onclick="saveNewKey()">ANAHTARI KAYDET</button>
+      </div>
+
+      <div class="card">
+        <textarea id="gl-input" rows="5" placeholder="Neler oldu? Anlat..."></textarea>
+        <button class="btn btn-purple" id="gl-btn" onclick="runAI('gl')">ANALİZ ET</button>
+      </div>
+      <div id="gl-error" class="error-msg"></div>
+      <div id="gl-result" class="result-box"></div>
+    </div>
+  </div>
+
+  <div id="lastseen" class="screen">
+    <div class="topbar"><div class="back-btn" onclick="navigate('home')">←</div> <h2 style="font-family:'Syne'">Last Seen</h2></div>
+    <div class="scroll-area">
+      <div class="card">
+        <textarea id="ls-input" rows="4" placeholder="Ona ne yazdın?"></textarea>
+        <button class="btn btn-teal" id="ls-btn" onclick="runAI('ls')">NE CEVAP VERİRDİ?</button>
+      </div>
+      <div id="ls-error" class="error-msg"></div>
+      <div id="ls-result" class="result-box"></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="navigate('home')">🏠<br>Ana Sayfa</div>
+    <div class="nav-item" onclick="navigate('ghostlog')">👻<br>GhostLog</div>
+    <div class="nav-item" onclick="navigate('lastseen')">🕐<br>Simulator</div>
+  </div>
+</div>
+
+<script>
+// 1. ZORLA SIFIRLAMA (BRUTE FORCE)
+// Sayfa her açıldığında eğer anahtar hatalıysa temizle
+if (localStorage.getItem('ghost_gemini_key') === null || localStorage.getItem('ghost_gemini_key') === "null" || localStorage.getItem('ghost_gemini_key').length < 5) {
+    localStorage.clear();
+    console.log("Hafıza temizlendi.");
+}
+
+let API_KEY = localStorage.getItem('ghost_gemini_key') || "";
+
+// 2. NAVİGASYON
+function navigate(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    
+    // API kutusunu sadece anahtar yoksa göster
+    const apiBox = document.getElementById('api-setup-container');
+    if (API_KEY) {
+        apiBox.style.display = "none";
+    } else {
+        apiBox.style.display = "block";
+    }
+}
+
+// 3. ANAHTAR KAYDETME
+function saveNewKey() {
+    const val = document.getElementById('api-key-field').value.trim();
+    if (val.length < 10) {
+        alert("Lütfen geçerli bir anahtar girin.");
+        return;
+    }
+    localStorage.setItem('ghost_gemini_key', val);
+    API_KEY = val;
+    alert("Anahtar başarıyla kaydedildi! Şimdi uygulamayı kullanabilirsin.");
+    navigate('ghostlog'); // Sayfayı yenilemiş gibi yap
+}
+
+// 4. YAPAY ZEKA ÇAĞRISI
+async function runAI(type) {
+    if (!API_KEY) {
+        alert("Önce API anahtarını girip kaydetmelisin!");
+        return;
+    }
+
+    const input = document.getElementById(type + '-input').value.trim();
+    const btn = document.getElementById(type + '-btn');
+    const resultBox = document.getElementById(type + '-result');
+    const errorBox = document.getElementById(type + '-error');
+
+    if (!input) return;
+
+    // Reset UI
+    errorBox.style.display = "none";
+    resultBox.style.display = "none";
+    btn.disabled = true;
+    btn.innerText = "Yapay Zeka Düşünüyor...";
+
+    try {
+        const prompt = type === 'gl' 
+            ? `Bir ghosting uzmanı olarak şu hikayeyi analiz et ve neden ghostlandığını söyle: ${input}`
+            : `Ghostlayan birinin ağzından şu mesaja soğuk bir cevap yaz: ${input}`;
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error?.message || "API Hatası oluştu.");
+        }
+
+        const aiText = data.candidates[0].content.parts[0].text;
+        resultBox.innerText = aiText;
+        resultBox.style.display = "block";
+
+    } catch (err) {
+        errorBox.innerText = "Hata: " + err.message;
+        errorBox.style.display = "block";
+        if (err.message.includes("API key not valid")) {
+            localStorage.removeItem('ghost_gemini_key');
+            API_KEY = "";
+            setTimeout(() => alert("Anahtar geçersiz olduğu için silindi. Lütfen yeni anahtar girin."), 500);
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerText = type === 'gl' ? "ANALİZ ET" : "NE CEVAP VERİRDİ?";
+    }
+}
+</script>
+
+</body>
+</html>
