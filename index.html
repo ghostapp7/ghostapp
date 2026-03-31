@@ -288,23 +288,30 @@ const PROXY = 'https://ghost-proxy.begumutku7.workers.dev/';
 async function askGemini(prompt) {
   if (!API_KEY) throw new Error('NO_KEY');
 
-  const res = await fetch(PROXY, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ apiKey: API_KEY, prompt: prompt })
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + API_KEY
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "user", content: prompt }
+      ]
+    })
   });
 
   if (!res.ok) {
-    const txt = await res.text();
-    throw new Error('PROXY_ERROR: ' + res.status + ' ' + txt.slice(0, 200));
+    const err = await res.json();
+    throw new Error("API_ERROR: " + (err.error?.message || res.status));
   }
 
   const data = await res.json();
 
-  if (data.error) throw new Error('GEMINI: ' + data.error.message);
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error("BOŞ_YANIT");
 
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error('BOŞ_YANIT');
   return text;
 }
 
