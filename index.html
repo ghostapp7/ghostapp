@@ -3,40 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GhostApp 👻 - Fix Mode</title>
+<title>GhostApp 👻 - Fixed & Working</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #0a0a0f; --surface: #16161f; --border: #1e1e2e;
-    --text: #ffffff; --text2: #c0c0e0; --text3: #44445a;
+    --text: #ffffff; --text3: #44445a;
     --purple: #7c5cff; --teal: #20c9a0; --red: #ff4d6d; --orange: #ff9f1c;
   }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; }
-  #app { height: 100dvh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; }
-  .screen { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bg); }
-  .screen.active { display: flex; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; height: 100vh; }
+  
+  #app { height: 100dvh; position: relative; max-width: 480px; margin: 0 auto; overflow: hidden; }
+  
+  /* Ekran Yönetimi */
+  .screen { 
+    position: absolute; inset: 0; 
+    display: none; /* Varsayılan gizli */
+    flex-direction: column; 
+    background: var(--bg); 
+    z-index: 10;
+  }
+  .screen.active { display: flex; } /* Sadece aktif olan görünür */
+
   .scroll-area { flex: 1; overflow-y: auto; padding: 20px 20px 100px; }
-  .topbar { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; }
+  .topbar { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
   .back-btn { width: 35px; height: 35px; background: var(--surface); border-radius: 50%; border: 1px solid var(--border); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   
-  /* Kartlar ve Menü */
   .menu-card { background: var(--surface); border: 1px solid var(--border); border-radius: 15px; padding: 20px; margin: 10px 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 15px; padding: 15px; margin-bottom: 15px; }
   
-  /* API Kurulum Alanı - Önemli */
+  /* API Alanı */
   #api-setup-container { background: #1a1505; border: 1px solid var(--orange); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
-  .api-input { width: 100%; background: #000; border: 1px solid var(--orange); padding: 12px; color: white; border-radius: 8px; margin-bottom: 10px; font-size: 14px; }
+  .api-input { width: 100%; background: #000; border: 1px solid var(--orange); padding: 12px; color: white; border-radius: 8px; margin-bottom: 10px; font-size: 14px; outline: none; }
   
-  textarea { width: 100%; background: #000; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white; resize: none; }
+  textarea { width: 100%; background: #000; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white; resize: none; font-family: inherit; }
   .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; margin-top: 10px; font-family: 'Syne'; }
   .btn-purple { background: var(--purple); color: white; }
   .btn-teal { background: var(--teal); color: black; }
+  
   .error-msg { background: #2a1010; color: var(--red); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 12px; display: none; border: 1px solid var(--red); }
   .result-box { background: #10101a; border: 1px solid var(--purple); padding: 15px; border-radius: 12px; margin-top: 15px; line-height: 1.6; white-space: pre-wrap; display: none; }
   
-  /* Bottom Nav */
-  .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: #050505; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--border); }
+  .bottom-nav { position: absolute; bottom: 0; width: 100%; background: #050505; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--border); z-index: 20; }
   .nav-item { color: var(--text3); font-size: 11px; text-align: center; cursor: pointer; }
   .nav-item.active { color: var(--purple); }
 </style>
@@ -47,101 +56,114 @@
   <div id="home" class="screen active">
     <div style="padding: 60px 25px 20px;">
         <h1 style="font-family:'Syne'; font-size: 40px;">GhostApp 👻</h1>
-        <p style="color:var(--text3)">Hafıza sıfırlandı, yeniden başla.</p>
+        <p style="color:var(--text3)">Ghostlanma analizi ve simülasyonu.</p>
     </div>
-    <div class="menu-card" onclick="navigate('ghostlog')"><span>👻</span> <div><b>GhostLog</b><br><small>Analiz Et</small></div></div>
-    <div class="menu-card" onclick="navigate('lastseen')"><span>🕐</span> <div><b>Last Seen</b><br><small>Simüle Et</small></div></div>
+    <div class="menu-card" onclick="navigate('ghostlog')"><span>👻</span> <div><b>GhostLog</b><br><small>Neden cevap vermiyor?</small></div></div>
+    <div class="menu-card" onclick="navigate('lastseen')"><span>🕐</span> <div><b>Last Seen</b><br><small>Simülasyon yap</small></div></div>
   </div>
 
   <div id="ghostlog" class="screen">
     <div class="topbar"><div class="back-btn" onclick="navigate('home')">←</div> <h2 style="font-family:'Syne'">GhostLog</h2></div>
     <div class="scroll-area">
-      <div id="api-setup-container">
-        <p style="font-size:12px; color:var(--orange); margin-bottom:8px;">⚠️ Google Gemini API Key Girin:</p>
-        <input type="text" id="api-key-field" class="api-input" placeholder="AIzaSy... ile başlar">
-        <button class="btn btn-teal" style="padding:8px" onclick="saveNewKey()">ANAHTARI KAYDET</button>
+      <div id="gl-api-box">
+        <p style="font-size:12px; color:var(--orange); margin-bottom:8px;">⚠️ API Anahtarın Eksik:</p>
+        <input type="text" id="api-key-input" class="api-input" placeholder="AIzaSy... anahtarını buraya yapıştır">
+        <button class="btn btn-teal" style="padding:8px" onclick="saveKey()">KAYDET VE BAŞLA</button>
       </div>
 
-      <div class="card">
-        <textarea id="gl-input" rows="5" placeholder="Neler oldu? Anlat..."></textarea>
-        <button class="btn btn-purple" id="gl-btn" onclick="runAI('gl')">ANALİZ ET</button>
+      <div id="gl-content" style="display:none">
+        <div class="card">
+          <textarea id="gl-input" rows="5" placeholder="Olayı anlat... Kaç gündür yazmıyor? En son ne oldu?"></textarea>
+          <button class="btn btn-purple" id="gl-btn" onclick="runAI('gl')">ANALİZ ET 👻</button>
+        </div>
+        <div id="gl-error" class="error-msg"></div>
+        <div id="gl-result" class="result-box"></div>
       </div>
-      <div id="gl-error" class="error-msg"></div>
-      <div id="gl-result" class="result-box"></div>
     </div>
   </div>
 
   <div id="lastseen" class="screen">
     <div class="topbar"><div class="back-btn" onclick="navigate('home')">←</div> <h2 style="font-family:'Syne'">Last Seen</h2></div>
     <div class="scroll-area">
-      <div class="card">
-        <textarea id="ls-input" rows="4" placeholder="Ona ne yazdın?"></textarea>
-        <button class="btn btn-teal" id="ls-btn" onclick="runAI('ls')">NE CEVAP VERİRDİ?</button>
-      </div>
-      <div id="ls-error" class="error-msg"></div>
-      <div id="ls-result" class="result-box"></div>
+        <div id="ls-content">
+            <div class="card">
+              <textarea id="ls-input" rows="4" placeholder="Ona en son ne yazdın?"></textarea>
+              <button class="btn btn-teal" id="ls-btn" onclick="runAI('ls')">NE CEVAP VERİRDİ? 🕐</button>
+            </div>
+            <div id="ls-error" class="error-msg"></div>
+            <div id="ls-result" class="result-box"></div>
+        </div>
     </div>
   </div>
 
   <div class="bottom-nav">
-    <div class="nav-item active" onclick="navigate('home')">🏠<br>Ana Sayfa</div>
-    <div class="nav-item" onclick="navigate('ghostlog')">👻<br>GhostLog</div>
-    <div class="nav-item" onclick="navigate('lastseen')">🕐<br>Simulator</div>
+    <div class="nav-item" id="nav-home" onclick="navigate('home')">🏠<br>Ana Sayfa</div>
+    <div class="nav-item" id="nav-ghostlog" onclick="navigate('ghostlog')">👻<br>GhostLog</div>
+    <div class="nav-item" id="nav-lastseen" onclick="navigate('lastseen')">🕐<br>Simulator</div>
   </div>
 </div>
 
 <script>
-// 1. ZORLA SIFIRLAMA (BRUTE FORCE)
-// Sayfa her açıldığında eğer anahtar hatalıysa temizle
-if (localStorage.getItem('ghost_gemini_key') === null || localStorage.getItem('ghost_gemini_key') === "null" || localStorage.getItem('ghost_gemini_key').length < 5) {
-    localStorage.clear();
-    console.log("Hafıza temizlendi.");
-}
+// --- DEĞİŞKENLER ---
+let API_KEY = localStorage.getItem('ghost_key') || "";
 
-let API_KEY = localStorage.getItem('ghost_gemini_key') || "";
-
-// 2. NAVİGASYON
-function navigate(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+// --- NAVİGASYON FONKSİYONU (TAMİR EDİLDİ) ---
+function navigate(screenId) {
+    // Tüm ekranları gizle
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(s => s.classList.remove('active'));
     
-    // API kutusunu sadece anahtar yoksa göster
-    const apiBox = document.getElementById('api-setup-container');
-    if (API_KEY) {
-        apiBox.style.display = "none";
+    // Hedef ekranı göster
+    const target = document.getElementById(screenId);
+    if (target) {
+        target.classList.add('active');
+    }
+
+    // Navigasyon ikonlarını güncelle
+    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+    const activeNav = document.getElementById('nav-' + screenId);
+    if (activeNav) activeNav.classList.add('active');
+
+    // API Durumunu Kontrol Et
+    checkApiStatus();
+}
+
+// --- API DURUM KONTROLÜ ---
+function checkApiStatus() {
+    const apiBox = document.getElementById('gl-api-box');
+    const glContent = document.getElementById('gl-content');
+    
+    if (API_KEY && API_KEY.length > 10) {
+        if(apiBox) apiBox.style.display = "none";
+        if(glContent) glContent.style.display = "block";
     } else {
-        apiBox.style.display = "block";
+        if(apiBox) apiBox.style.display = "block";
+        if(glContent) glContent.style.display = "none";
     }
 }
 
-// 3. ANAHTAR KAYDETME
-function saveNewKey() {
-    const val = document.getElementById('api-key-field').value.trim();
-    if (val.length < 10) {
-        alert("Lütfen geçerli bir anahtar girin.");
+// --- ANAHTAR KAYDETME ---
+function saveKey() {
+    const val = document.getElementById('api-key-input').value.trim();
+    if (val.length < 15) {
+        alert("Lütfen geçerli bir Gemini API anahtarı girin!");
         return;
     }
-    localStorage.setItem('ghost_gemini_key', val);
+    localStorage.setItem('ghost_key', val);
     API_KEY = val;
-    alert("Anahtar başarıyla kaydedildi! Şimdi uygulamayı kullanabilirsin.");
-    navigate('ghostlog'); // Sayfayı yenilemiş gibi yap
+    alert("Anahtar başarıyla kaydedildi!");
+    checkApiStatus(); // İçeriği göster
 }
 
-// 4. YAPAY ZEKA ÇAĞRISI
+// --- YAPAY ZEKA ÇALIŞTIRMA ---
 async function runAI(type) {
-    if (!API_KEY) {
-        alert("Önce API anahtarını girip kaydetmelisin!");
-        return;
-    }
-
     const input = document.getElementById(type + '-input').value.trim();
     const btn = document.getElementById(type + '-btn');
     const resultBox = document.getElementById(type + '-result');
     const errorBox = document.getElementById(type + '-error');
 
-    if (!input) return;
+    if (!input) { alert("Lütfen bir şeyler yazın!"); return; }
 
-    // Reset UI
     errorBox.style.display = "none";
     resultBox.style.display = "none";
     btn.disabled = true;
@@ -149,12 +171,10 @@ async function runAI(type) {
 
     try {
         const prompt = type === 'gl' 
-            ? `Bir ghosting uzmanı olarak şu hikayeyi analiz et ve neden ghostlandığını söyle: ${input}`
-            : `Ghostlayan birinin ağzından şu mesaja soğuk bir cevap yaz: ${input}`;
+            ? `Sen bir ilişki uzmanısın. Kullanıcının şu hikayesini analiz et: "${input}". Neden ghostlandığını ve geri dönüp dönmeyeceğini eğlenceli ve dürüst bir dille Türkçe anlat.`
+            : `Kullanıcı şu mesajı attı: "${input}". Onu ghostlayan kişinin verebileceği en soğuk ve kısa cevabı yaz. Sonra bu cevabın ne anlama geldiğini açıkla. Türkçe olsun.`;
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-        
-        const response = await fetch(url, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -163,27 +183,10 @@ async function runAI(type) {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.error?.message || "API Hatası oluştu.");
+            throw new Error(data.error?.message || "API Hatası");
         }
 
-        const aiText = data.candidates[0].content.parts[0].text;
-        resultBox.innerText = aiText;
+        const text = data.candidates[0].content.parts[0].text;
+        resultBox.innerText = text;
         resultBox.style.display = "block";
-
-    } catch (err) {
-        errorBox.innerText = "Hata: " + err.message;
-        errorBox.style.display = "block";
-        if (err.message.includes("API key not valid")) {
-            localStorage.removeItem('ghost_gemini_key');
-            API_KEY = "";
-            setTimeout(() => alert("Anahtar geçersiz olduğu için silindi. Lütfen yeni anahtar girin."), 500);
-        }
-    } finally {
-        btn.disabled = false;
-        btn.innerText = type === 'gl' ? "ANALİZ ET" : "NE CEVAP VERİRDİ?";
-    }
-}
-</script>
-
-</body>
-</html>
+    } catch (err
