@@ -10,433 +10,94 @@
 <title>GhostApp 👻</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
-<!-- ============ MANIFEST için inline PWA ============ -->
-<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiR2hvc3RBcHAiLCJzaG9ydF9uYW1lIjoiR2hvc3RBcHAiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwZiIsInRoZW1lX2NvbG9yIjoiIzBhMGEwZiIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlNakl3SWlCb1pXbG5hSFE5SWpJeU1DSWdkbWxsZDBKdmVEMGlNQ0F3SURJeU1DQXlNakFpSUhacFpYZENiM2c5SWpBZ01DQXlNakFnTWpJd0lpQjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlHaDBkSEE2THk5M2QzY3VaMjlzZEdFdVkyOXRMMmxqYjI1MlpYSXZNakF3TUM5d2NtVnpaWEoyWlNJK1BIQmhkR2dnWm1sc2JEMGNJQ01tSWlCa1BTSnRZWEp5WVhrdExqRWlMejQ4TDNOJ1gzdmZxdGV4dCBjbGFzcz0nZW1vamlCRycgeT0nMTI4JyB4PScxMTInIGZvbnQtc2l6ZT0nMTIwJz7wn5KbPC90ZXh0PjwvdGV4dD48L3N2Zz4iLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
-
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
   :root {
-    --bg: #0a0a0f;
-    --surface: #16161f;
-    --surface2: #1e1e2e;
-    --border: #1e1e2e;
-    --border2: #2a2240;
-    --text: #ffffff;
-    --text2: #c0c0e0;
-    --text3: #44445a;
-    --text4: #333348;
-    --purple: #7c5cff;
-    --purple-dim: #1a1232;
-    --purple-light: #9f7fff;
-    --teal: #20c9a0;
-    --teal-dim: #0a2520;
-    --red: #ff4d6d;
-    --red-dim: #2a1020;
-    --orange: #ff9f1c;
-    --orange-dim: #251508;
+    --bg: #0a0a0f; --surface: #16161f; --border: #1e1e2e; --border2: #2a2240;
+    --text: #ffffff; --text2: #c0c0e0; --text3: #44445a; --text4: #333348;
+    --purple: #7c5cff; --purple-dim: #1a1232; --purple-light: #9f7fff;
+    --teal: #20c9a0; --teal-dim: #0a2520;
+    --red: #ff4d6d; --red-dim: #2a1020;
+    --orange: #ff9f1c; --orange-dim: #251508;
   }
-
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    overflow: hidden;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* ======= APP SHELL ======= */
-  #app {
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    max-width: 480px;
-    margin: 0 auto;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* ======= SCREENS ======= */
-  .screen {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    transform: translateX(100%);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    background: var(--bg);
-    overflow: hidden;
-  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; -webkit-font-smoothing: antialiased; }
+  #app { height: 100dvh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; overflow: hidden; }
+  .screen { position: absolute; inset: 0; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); background: var(--bg); overflow: hidden; }
   .screen.active { transform: translateX(0); }
   .screen.exit { transform: translateX(-30%); }
-
-  /* ======= SCROLL AREA ======= */
-  .scroll-area {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 16px 20px 100px;
-  }
+  .scroll-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 20px 100px; }
   .scroll-area::-webkit-scrollbar { display: none; }
-
-  /* ======= TOP BAR ======= */
-  .topbar {
-    display: flex;
-    align-items: center;
-    padding: 52px 20px 16px;
-    gap: 12px;
-    flex-shrink: 0;
-    background: var(--bg);
-  }
-  .back-btn {
-    width: 36px; height: 36px;
-    background: var(--surface);
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-  .topbar-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-  }
-
-  /* ======= HOME SCREEN ======= */
-  #home {
-    transform: translateX(0);
-  }
-  .home-header {
-    padding: 60px 24px 32px;
-    flex-shrink: 0;
-  }
-  .home-logo {
-    font-family: 'Syne', sans-serif;
-    font-size: 42px;
-    font-weight: 900;
-    letter-spacing: -2px;
-    line-height: 1;
-  }
+  .topbar { display: flex; align-items: center; padding: 52px 20px 16px; gap: 12px; flex-shrink: 0; background: var(--bg); padding-top: max(52px, env(safe-area-inset-top, 0px) + 12px); }
+  .back-btn { width: 36px; height: 36px; background: var(--surface); border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; flex-shrink: 0; }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  #home { transform: translateX(0); }
+  .home-header { padding: 60px 24px 32px; flex-shrink: 0; padding-top: max(60px, env(safe-area-inset-top, 0px) + 20px); }
+  .home-logo { font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
   .home-logo span { color: var(--purple); }
-  .home-sub {
-    color: var(--text3);
-    font-size: 14px;
-    margin-top: 8px;
-  }
-  .home-cards {
-    padding: 0 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .menu-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    cursor: pointer;
-    transition: transform 0.15s, border-color 0.15s;
-    -webkit-user-select: none;
-    user-select: none;
-  }
+  .home-sub { color: var(--text3); font-size: 14px; margin-top: 8px; }
+  .home-cards { padding: 0 20px; display: flex; flex-direction: column; gap: 14px; }
+  .menu-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: transform 0.15s; -webkit-user-select: none; user-select: none; }
   .menu-card:active { transform: scale(0.97); }
-  .menu-icon-wrap {
-    width: 56px; height: 56px;
-    border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px;
-    flex-shrink: 0;
-  }
+  .menu-icon-wrap { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
   .menu-info { flex: 1; }
-  .menu-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 17px;
-    font-weight: 800;
-    color: var(--text);
-    letter-spacing: -0.3px;
-  }
+  .menu-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
   .menu-desc { font-size: 12px; color: var(--text3); margin-top: 3px; }
-  .menu-arrow { font-size: 14px; color: var(--text4); }
-
-  /* ======= CARDS & INPUTS ======= */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 14px;
-  }
-  .card-label {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text3);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .label-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-  }
-
-  textarea, input[type=text] {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px 16px;
-    color: var(--text2);
-    font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
-    resize: none;
-    outline: none;
-    line-height: 1.6;
-    transition: border-color 0.2s;
-    -webkit-appearance: none;
-  }
-  textarea:focus, input:focus { border-color: var(--purple); }
-  textarea::placeholder, input::placeholder { color: var(--text4); }
-
-  .btn {
-    width: 100%;
-    padding: 15px;
-    border-radius: 14px;
-    border: none;
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
+  .menu-arrow { font-size: 18px; color: var(--text4); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+  .card-label { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .label-dot { width: 6px; height: 6px; border-radius: 50%; }
+  textarea { width: 100%; background: #111118; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; color: var(--text2); font-size: 14px; font-family: 'DM Sans', sans-serif; resize: none; outline: none; line-height: 1.6; transition: border-color 0.2s; -webkit-appearance: none; }
+  textarea:focus { border-color: var(--purple); }
+  textarea::placeholder { color: var(--text4); }
+  .btn { width: 100%; padding: 15px; border-radius: 14px; border: none; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn:active { transform: scale(0.97); }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
   .btn-purple { background: var(--purple); color: #fff; }
   .btn-teal { background: var(--teal); color: #000; }
   .btn-red { background: var(--red); color: #fff; }
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--purple);
-    color: var(--purple-light);
-  }
-
-  /* spinner */
-  .spinner {
-    width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
+  .btn-outline { background: transparent; border: 1px solid var(--purple); color: var(--purple-light); }
+  .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
   .spinner.dark { border-color: rgba(0,0,0,0.2); border-top-color: #000; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* result box */
-  .result-box {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 16px;
-    padding: 18px;
-    margin-top: 16px;
-    color: var(--text2);
-    font-size: 14px;
-    line-height: 1.8;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-
-  /* ======= GHOST LOG ======= */
+  .result-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 18px; margin-top: 16px; color: var(--text2); font-size: 14px; line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
   .char-count { font-size: 11px; color: var(--text4); text-align: right; margin-top: 5px; }
-
-  /* ======= PERSONA TEST ======= */
-  .question-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 14px;
-  }
-  .q-num {
-    font-size: 10px;
-    color: var(--purple);
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-  }
-  .q-text {
-    font-size: 14px;
-    color: var(--text);
-    font-weight: 500;
-    line-height: 1.5;
-    margin-bottom: 12px;
-  }
-  .opt {
-    padding: 11px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: #111118;
-    font-size: 13px;
-    color: var(--text3);
-    cursor: pointer;
-    margin-bottom: 7px;
-    transition: all 0.15s;
-    -webkit-user-select: none;
-    user-select: none;
-  }
+  .error-msg { background: var(--red-dim); border: 1px solid var(--red); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 13px; color: var(--red); line-height: 1.6; display: none; }
+  .api-setup { background: var(--orange-dim); border: 1px solid var(--orange); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+  .api-setup-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; color: var(--orange); margin-bottom: 6px; }
+  .api-setup-desc { font-size: 12px; color: #cc7a00; line-height: 1.6; margin-bottom: 10px; }
+  .api-row { display: flex; gap: 8px; }
+  .api-input { flex: 1; background: #111108; border: 1px solid var(--orange); border-radius: 10px; padding: 10px 12px; color: var(--text2); font-size: 12px; font-family: 'DM Sans', sans-serif; outline: none; -webkit-appearance: none; }
+  .api-save { padding: 10px 14px; background: var(--orange); color: #000; border: none; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; font-family: 'Syne', sans-serif; white-space: nowrap; }
+  .api-ok { background: #0a2010; border: 1px solid var(--teal); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: var(--teal); display: none; }
+  .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+  .q-num { font-size: 10px; color: var(--purple); font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; }
+  .q-text { font-size: 14px; color: var(--text); font-weight: 500; line-height: 1.5; margin-bottom: 12px; }
+  .opt { padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border); background: #111118; font-size: 13px; color: var(--text3); cursor: pointer; margin-bottom: 7px; transition: all 0.15s; -webkit-user-select: none; user-select: none; }
   .opt:last-child { margin-bottom: 0; }
-  .opt.selected {
-    background: var(--purple-dim);
-    border-color: var(--purple);
-    color: var(--purple-light);
-  }
+  .opt.selected { background: var(--purple-dim); border-color: var(--purple); color: var(--purple-light); }
   .opt:active { transform: scale(0.98); }
-
-  /* progress */
-  .progress-bar-wrap {
-    background: var(--border);
-    height: 4px;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 20px;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background: var(--purple);
-    border-radius: 4px;
-    transition: width 0.4s ease;
-  }
-
-  /* result screen */
-  .result-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 24px;
-    text-align: center;
-  }
+  .progress-wrap { background: var(--border); height: 4px; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .progress-fill { height: 100%; background: var(--purple); border-radius: 4px; transition: width 0.4s ease; }
+  .result-screen { display: flex; flex-direction: column; align-items: center; padding: 32px 4px; text-align: center; }
   .result-emoji-big { font-size: 72px; margin-bottom: 16px; }
-  .result-type {
-    font-family: 'Syne', sans-serif;
-    font-size: 26px;
-    font-weight: 900;
-    letter-spacing: -0.5px;
-    margin-bottom: 20px;
-    line-height: 1.2;
-  }
-  .result-desc-box {
-    border-radius: 16px;
-    padding: 20px;
-    border: 1px solid;
-    margin-bottom: 20px;
-    font-size: 14px;
-    line-height: 1.8;
-    color: var(--text2);
-  }
-  .result-score {
-    font-size: 12px;
-    color: var(--text3);
-    margin-bottom: 28px;
-  }
-
-  /* ======= BOTTOM NAV ======= */
-  .bottom-nav {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(10,10,15,0.9);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-around;
-    padding: 10px 0 24px;
-    z-index: 100;
-  }
-  .nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    padding: 4px 16px;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  .nav-icon { font-size: 22px; }
-  .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+  .result-type { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 20px; line-height: 1.2; }
+  .result-desc-box { border-radius: 16px; padding: 20px; border: 1px solid; margin-bottom: 16px; font-size: 14px; line-height: 1.8; color: var(--text2); text-align: left; }
+  .result-score { font-size: 12px; color: var(--text3); margin-bottom: 24px; }
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(10,10,15,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: max(14px, env(safe-area-inset-bottom, 0px) + 8px); z-index: 100; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 12px; -webkit-user-select: none; user-select: none; min-width: 60px; }
+  .nav-icon { font-size: 20px; }
+  .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; transition: color 0.2s; }
   .nav-item.active .nav-label { color: var(--purple); }
   .nav-item.inactive .nav-label { color: var(--text4); }
-  .nav-dot {
-    width: 4px; height: 4px;
-    background: var(--purple);
-    border-radius: 50%;
-    margin-top: 1px;
-  }
-
-  /* ======= API KEY BANNER ======= */
-  .api-banner {
-    background: var(--orange-dim);
-    border: 1px solid var(--orange);
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 14px;
-    font-size: 12px;
-    color: var(--orange);
-    line-height: 1.6;
-  }
-  .api-banner strong { font-weight: 700; display: block; margin-bottom: 2px; }
-  .api-key-input-wrap { margin-top: 8px; display: flex; gap: 8px; }
-  .api-key-input-wrap input {
-    flex: 1;
-    padding: 10px 12px;
-    font-size: 12px;
-    border-radius: 10px;
-    margin-bottom: 0;
-  }
-  .api-save-btn {
-    padding: 10px 14px;
-    background: var(--orange);
-    color: #000;
-    border: none;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
-    font-family: 'Syne', sans-serif;
-  }
-
-  /* ======= ANIMATIONS ======= */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .fade-up { animation: fadeUp 0.4s ease forwards; }
-
-  /* Safe area for notch */
-  .home-header { padding-top: max(60px, env(safe-area-inset-top, 0px) + 20px); }
-  .topbar { padding-top: max(52px, env(safe-area-inset-top, 0px) + 12px); }
-  .bottom-nav { padding-bottom: max(24px, env(safe-area-inset-bottom, 0px) + 8px); }
+  .nav-dot { width: 4px; height: 4px; background: var(--purple); border-radius: 50%; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.35s ease forwards; }
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- ============ HOME ============ -->
+  <!-- HOME -->
   <div id="home" class="screen active">
     <div class="home-header">
       <div class="home-logo">Ghost<span>App</span></div>
@@ -470,68 +131,60 @@
     </div>
   </div>
 
-  <!-- ============ GHOST LOG ============ -->
+  <!-- GHOST LOG -->
   <div id="ghostlog" class="screen">
     <div class="topbar">
       <div class="back-btn" onclick="goBack()">←</div>
       <div class="topbar-title" style="color:var(--purple)">GhostLog 👻</div>
     </div>
     <div class="scroll-area">
-      <div id="gl-api-banner" class="api-banner" style="display:none">
-        <strong>⚠️ API Anahtarı Gerekli</strong>
-        AI analizini kullanmak için Gemini API anahtarını gir. Ücretsiz: aistudio.google.com
-        <div class="api-key-input-wrap">
-          <input type="text" id="gl-api-input" placeholder="AIza..." />
-          <button class="api-save-btn" onclick="saveApiKey()">Kaydet</button>
+      <div class="api-ok" id="gl-api-ok">✓ API anahtarı kaydedildi</div>
+      <div class="api-setup" id="gl-api-setup">
+        <div class="api-setup-title">⚠️ API Anahtarı Gerekli</div>
+        <div class="api-setup-desc">AI analizini kullanmak için Google Gemini API anahtarını gir. Ücretsiz almak için: <strong>aistudio.google.com</strong> → Get API Key → Create API Key</div>
+        <div class="api-row">
+          <input class="api-input" id="gl-key-input" type="text" placeholder="AIzaSy..." />
+          <button class="api-save" onclick="saveKey()">Kaydet</button>
         </div>
       </div>
-
       <div class="card">
         <div class="card-label"><div class="label-dot" style="background:var(--purple)"></div>Hikayeni anlat</div>
-        <textarea id="gl-story" rows="6" maxlength="600"
-          placeholder="Ne oldu? Kaç gündür cevap yok? Son mesajın ne zaman okundu? Ne zaman buluşmuştunuz?..."></textarea>
+        <textarea id="gl-story" rows="6" maxlength="600" placeholder="Ne oldu? Kaç gündür cevap yok? Son mesajın ne zaman okundu? Ne zaman buluşmuştunuz?"></textarea>
         <div class="char-count"><span id="gl-cc">0</span>/600</div>
       </div>
-
-      <button class="btn btn-purple" id="gl-btn" onclick="analyzeGhost()">
-        ANALİZ ET 👻
-      </button>
-
-      <div id="gl-result" class="result-box" style="display:none"></div>
+      <button class="btn btn-purple" id="gl-btn" onclick="analyzeGhost()">ANALİZ ET 👻</button>
+      <div class="error-msg" id="gl-error"></div>
+      <div class="result-box" id="gl-result" style="display:none"></div>
     </div>
   </div>
 
-  <!-- ============ LAST SEEN ============ -->
+  <!-- LAST SEEN -->
   <div id="lastseen" class="screen">
     <div class="topbar">
       <div class="back-btn" onclick="goBack()">←</div>
       <div class="topbar-title" style="color:var(--teal)">Last Seen 🕐</div>
     </div>
     <div class="scroll-area">
-      <div id="ls-api-banner" class="api-banner" style="display:none">
-        <strong>⚠️ API Anahtarı Gerekli</strong>
-        AI simülasyonu için Gemini API anahtarını gir. Ücretsiz: aistudio.google.com
-        <div class="api-key-input-wrap">
-          <input type="text" id="ls-api-input" placeholder="AIza..." />
-          <button class="api-save-btn" onclick="saveApiKey()">Kaydet</button>
+      <div class="api-ok" id="ls-api-ok">✓ API anahtarı kaydedildi</div>
+      <div class="api-setup" id="ls-api-setup">
+        <div class="api-setup-title">⚠️ API Anahtarı Gerekli</div>
+        <div class="api-setup-desc">AI simülasyonu için Google Gemini API anahtarını gir. Ücretsiz: <strong>aistudio.google.com</strong></div>
+        <div class="api-row">
+          <input class="api-input" id="ls-key-input" type="text" placeholder="AIzaSy..." />
+          <button class="api-save" onclick="saveKey()">Kaydet</button>
         </div>
       </div>
-
       <div class="card">
-        <div class="card-label"><div class="label-dot" style="background:var(--teal)"></div>Seni ghostlayan kişiye son mesajın</div>
-        <textarea id="ls-msg" rows="4"
-          placeholder="Neden cevap vermiyorsun? / Tamam anladım, görüşmeyiz o zaman..."></textarea>
+        <div class="card-label"><div class="label-dot" style="background:var(--teal)"></div>Seni ghostlayan kişiye yazdığın son mesaj</div>
+        <textarea id="ls-msg" rows="4" placeholder="Neden cevap vermiyorsun? / Tamam anladım, görüşmeyiz o zaman..."></textarea>
       </div>
-
-      <button class="btn btn-teal" id="ls-btn" onclick="simulateLastSeen()">
-        NE YAZARDI? 🕐
-      </button>
-
-      <div id="ls-result" class="result-box" style="display:none; border-color:var(--teal-dim)"></div>
+      <button class="btn btn-teal" id="ls-btn" onclick="simulateLastSeen()">NE YAZARDI? 🕐</button>
+      <div class="error-msg" id="ls-error"></div>
+      <div class="result-box" id="ls-result" style="display:none; border-color:var(--teal-dim)"></div>
     </div>
   </div>
 
-  <!-- ============ PERSONA TEST ============ -->
+  <!-- PERSONA TEST -->
   <div id="persona" class="screen">
     <div class="topbar">
       <div class="back-btn" onclick="goBack()">←</div>
@@ -543,15 +196,15 @@
     </div>
   </div>
 
-  <!-- ============ BOTTOM NAV ============ -->
+  <!-- BOTTOM NAV -->
   <div class="bottom-nav">
     <div class="nav-item active" id="nav-home" onclick="navigate('home')">
-      <div class="nav-icon">👻</div>
+      <div class="nav-icon">🏠</div>
       <div class="nav-label">Ana Sayfa</div>
       <div class="nav-dot"></div>
     </div>
     <div class="nav-item inactive" id="nav-ghostlog" onclick="navigate('ghostlog')">
-      <div class="nav-icon">📓</div>
+      <div class="nav-icon">👻</div>
       <div class="nav-label">GhostLog</div>
     </div>
     <div class="nav-item inactive" id="nav-lastseen" onclick="navigate('lastseen')">
@@ -563,13 +216,12 @@
       <div class="nav-label">Test</div>
     </div>
   </div>
-
 </div>
 
 <script>
-// ============ NAVIGATION ============
+// ── NAVİGASYON ──
 let currentScreen = 'home';
-let history = ['home'];
+let navHistory = ['home'];
 
 function navigate(id) {
   if (id === currentScreen) return;
@@ -580,84 +232,104 @@ function navigate(id) {
   next.classList.add('active');
   setTimeout(() => prev.classList.remove('exit'), 350);
   currentScreen = id;
-  if (!history.includes(id) || id === 'home') history = ['home', id];
-  else history.push(id);
+  navHistory = id === 'home' ? ['home'] : ['home', id];
   updateNav(id);
   if (id === 'persona' && !personaBuilt) buildPersonaTest();
-  checkApiKey(id);
+  refreshApiUI();
 }
 
 function goBack() {
-  history.pop();
-  const prev = history[history.length - 1] || 'home';
-  navigate(prev);
+  navHistory.pop();
+  navigate(navHistory[navHistory.length - 1] || 'home');
 }
 
 function updateNav(id) {
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.remove('active');
     el.classList.add('inactive');
-    el.querySelector('.nav-dot')?.remove();
+    const dot = el.querySelector('.nav-dot');
+    if (dot) dot.remove();
   });
   const active = document.getElementById('nav-' + id);
   if (active) {
     active.classList.add('active');
     active.classList.remove('inactive');
-    if (!active.querySelector('.nav-dot')) {
-      const dot = document.createElement('div');
-      dot.className = 'nav-dot';
-      active.appendChild(dot);
-    }
+    const dot = document.createElement('div');
+    dot.className = 'nav-dot';
+    active.appendChild(dot);
   }
 }
 
-// ============ API KEY ============
-let API_KEY = localStorage.getItem('ghost_api_key') || '';
+// ── API ANAHTARI ──
+let API_KEY = localStorage.getItem('ghost_gemini_key') || '';
 
-function checkApiKey(screenId) {
-  const needsApi = ['ghostlog', 'lastseen'];
-  if (!needsApi.includes(screenId)) return;
-  const bannerId = screenId === 'ghostlog' ? 'gl-api-banner' : 'ls-api-banner';
-  document.getElementById(bannerId).style.display = API_KEY ? 'none' : 'block';
+function refreshApiUI() {
+  const hasKey = !!API_KEY;
+  ['gl','ls'].forEach(prefix => {
+    const setup = document.getElementById(prefix + '-api-setup');
+    const ok    = document.getElementById(prefix + '-api-ok');
+    if (setup) setup.style.display = hasKey ? 'none' : 'block';
+    if (ok)    ok.style.display    = hasKey ? 'block' : 'none';
+  });
 }
 
-function saveApiKey() {
-  const glInput = document.getElementById('gl-api-input');
-  const lsInput = document.getElementById('ls-api-input');
-  const val = (glInput?.value || lsInput?.value || '').trim();
-  if (!val) return;
-  API_KEY = val;
-  localStorage.setItem('ghost_api_key', val);
-  document.getElementById('gl-api-banner').style.display = 'none';
-  document.getElementById('ls-api-banner').style.display = 'none';
+function saveKey() {
+  const v = (document.getElementById('gl-key-input')?.value ||
+             document.getElementById('ls-key-input')?.value || '').trim();
+  if (!v || v.length < 10) return;
+  API_KEY = v;
+  localStorage.setItem('ghost_gemini_key', v);
+  refreshApiUI();
 }
 
-// ============ GEMINI API ============
+// ── PROXY ÜZERINDEN GEMİNİ ──
+const PROXY = 'https://ghost-proxy.begumutku7.workers.dev/';
+
 async function askGemini(prompt) {
-  if (!API_KEY) throw new Error('API anahtarı yok');
-  const PROXY = 'https://ghost-proxy.begumutku7.workers.dev/';
+  if (!API_KEY) throw new Error('NO_KEY');
+
   const res = await fetch(PROXY, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ apiKey: API_KEY, prompt: prompt })
   });
+
   if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error?.message || 'API hatası');
+    const txt = await res.text();
+    throw new Error('PROXY_ERROR: ' + res.status + ' ' + txt.slice(0, 200));
   }
+
   const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+  if (data.error) throw new Error('GEMINI: ' + data.error.message);
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('BOŞ_YANIT');
+  return text;
 }
 
-// ============ GHOST LOG ============
-const glStory = document.getElementById('gl-story');
-const glCC = document.getElementById('gl-cc');
-glStory.addEventListener('input', () => glCC.textContent = glStory.value.length);
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+// ── GHOST LOG ──
+document.getElementById('gl-story').addEventListener('input', function() {
+  document.getElementById('gl-cc').textContent = this.value.length;
+});
 
 async function analyzeGhost() {
-  if (!API_KEY) { document.getElementById('gl-api-banner').style.display = 'block'; return; }
-  const story = glStory.value.trim();
-  if (story.length < 20) { glStory.style.borderColor = 'var(--red)'; setTimeout(() => glStory.style.borderColor = '', 1500); return; }
+  if (!API_KEY) { refreshApiUI(); return; }
+  const story = document.getElementById('gl-story').value.trim();
+  if (story.length < 15) {
+    showError('gl-error', '✏️ Biraz daha anlat — en az 15 karakter yaz.');
+    return;
+  }
+  hideError('gl-error');
 
   const btn = document.getElementById('gl-btn');
   const resultBox = document.getElementById('gl-result');
@@ -670,37 +342,46 @@ async function analyzeGhost() {
 
 Kullanıcının ghostlanma hikayesi: "${story}"
 
-Şu formatta analiz yaz:
+Şu başlıklarla analiz yaz:
 
 👻 GHOSTLANMA SEBEBİ
 2-3 cümle. Eğlenceli ama gerçekçi. Acı ama komik tonda.
 
 📊 GERİ YAZMA İHTİMALİ
-%XX - ve kısa bir yorum (1 cümle).
+%XX — ve kısa bir yorum (1 cümle).
 
 🚩 RED FLAG ANALİZİ
-• Red flag 1 (YÜKSEK/ORTA/DÜŞÜK)
-• Red flag 2
-• Red flag 3`;
+• [YÜKSEK/ORTA/DÜŞÜK] Red flag açıklaması
+• [YÜKSEK/ORTA/DÜŞÜK] Red flag açıklaması
+• [YÜKSEK/ORTA/DÜŞÜK] Red flag açıklaması`;
 
     const result = await askGemini(prompt);
     resultBox.textContent = result;
     resultBox.style.display = 'block';
+    resultBox.classList.remove('fade-up');
+    void resultBox.offsetWidth;
     resultBox.classList.add('fade-up');
   } catch(e) {
-    resultBox.textContent = '❌ ' + (e.message.includes('API') ? 'API anahtarın hatalı olabilir. Kontrol et.' : 'Bir hata oluştu, tekrar dene.');
-    resultBox.style.display = 'block';
+    let msg = '❌ Bir hata oluştu, tekrar dene.';
+    if (e.message === 'NO_KEY') msg = '⚠️ Önce API anahtarını kaydet.';
+    else if (e.message.includes('API_KEY')) msg = '🔑 API anahtarın geçersiz. Kontrol et.';
+    else if (e.message.includes('PROXY_ERROR')) msg = '🌐 Sunucuya ulaşılamadı. İnternet bağlantını kontrol et.';
+    showError('gl-error', msg);
   }
 
   btn.disabled = false;
   btn.innerHTML = 'YENİDEN ANALİZ ET 👻';
 }
 
-// ============ LAST SEEN SIMULATOR ============
+// ── LAST SEEN SIMULATOR ──
 async function simulateLastSeen() {
-  if (!API_KEY) { document.getElementById('ls-api-banner').style.display = 'block'; return; }
+  if (!API_KEY) { refreshApiUI(); return; }
   const msg = document.getElementById('ls-msg').value.trim();
-  if (!msg) { return; }
+  if (!msg) {
+    showError('ls-error', '✏️ Bir mesaj yaz önce.');
+    return;
+  }
+  hideError('ls-error');
 
   const btn = document.getElementById('ls-btn');
   const resultBox = document.getElementById('ls-result');
@@ -711,38 +392,43 @@ async function simulateLastSeen() {
   try {
     const prompt = `Sen bir ghosting simülatörüsün. Türkçe yaz.
 
-Kullanıcıyı ghostlayan biri var. Bu kişi artık iletişim kurmak istemiyor ama EĞER cevap yazmış olsaydı ne yazardı?
+Bir kişi seni ghostluyor — yani artık cevap vermiyor, iletişimi kesiyor. Bu kişi eğer cevap yazmış olsaydı ne yazardı?
 
-Kullanıcının mesajı: "${msg}"
+Kullanıcının gönderdiği mesaj: "${msg}"
 
-Önce tırnak içinde o kişinin cevabını yaz. Cevap soğuk, mesafeli, belirsiz veya bahaneci olmalı — ghostlayan biri gibi.
-Sonra tek satır boşluk bırak ve 🔍 işaretiyle bu cevabın gerçekte ne anlama geldiğini 1-2 cümle eğlenceli yorumla.`;
+Önce tırnak işareti içinde ghostlayan kişinin vereceği cevabı yaz. Cevap soğuk, mesafeli, kısa, belirsiz veya bahaneci olmalı.
+Sonra bir satır boşluk bırak.
+🔍 işaretiyle bu cevabın gerçekte ne anlama geldiğini 1-2 cümleyle eğlenceli yorumla.`;
 
     const result = await askGemini(prompt);
     resultBox.textContent = result;
     resultBox.style.display = 'block';
+    resultBox.classList.remove('fade-up');
+    void resultBox.offsetWidth;
     resultBox.classList.add('fade-up');
   } catch(e) {
-    resultBox.textContent = '❌ ' + (e.message.includes('API') ? 'API anahtarın hatalı olabilir.' : 'Bir hata oluştu, tekrar dene.');
-    resultBox.style.display = 'block';
+    let msg = '❌ Bir hata oluştu, tekrar dene.';
+    if (e.message === 'NO_KEY') msg = '⚠️ Önce API anahtarını kaydet.';
+    else if (e.message.includes('PROXY_ERROR')) msg = '🌐 Sunucuya ulaşılamadı.';
+    showError('ls-error', msg);
   }
 
   btn.disabled = false;
   btn.innerHTML = 'TEKRAR DENE 🕐';
 }
 
-// ============ PERSONA TEST ============
+// ── PERSONA TEST ──
 const questions = [
-  { q: 'Birinden gelen mesajı okuyunca ne yaparsın?', opts: ['Hemen cevap yazarım', 'Biraz bekler sonra yazarım', 'Cevap yazacağım diye düşünürüm, yazmam', 'Okumadıysam daha iyi'], scores: [0,1,2,3] },
-  { q: 'Sana ilgi gösteren biri sıkıcı gelmeye başlarsa?', opts: ['Nazikçe söylerim', 'Yavaş yavaş azaltırım', 'Yokmuşum gibi davranırım', 'Blok hayatı kolaylaştırır'], scores: [0,1,2,3] },
-  { q: 'Görüşmek istediğin biri sana "ne zaman?" diye sorarsa?', opts: ['Tarih veririm', '"Yakında" derim', '"Haber veririm" derim, vermem', 'Mesajı görmedim sayarım'], scores: [0,1,2,3] },
-  { q: 'Seni ghostlayan biri tekrar yazarsa?', opts: ['Normal konuşurum', 'Soğuk davranırım', 'Aynısını yaparım', 'Zaten blok var'], scores: [0,1,2,3] },
-  { q: 'Bir buluşma planı için kaç kez erteleyebilirsin?', opts: ['Hiç ertelemem', '1 kez', '2-3 kez', 'Sonsuz'], scores: [0,1,2,3] },
-  { q: 'Story\'ni açan birine ne hissediyorsun?', opts: ['Hiçbir şey, normal', 'Biraz garip hissettiriyor', 'Cevap mı yazmam gerekiyor?', 'Bloklamalıyım'], scores: [0,1,2,3] },
-  { q: 'Konuşmak istemediğin biriyle ne yaparsın?', opts: ['Dürüstçe anlatırım', 'Kısa kısa cevap veririm', 'Ekranı kapatırım', 'Zaten okumuyorum'], scores: [0,1,2,3] },
-  { q: 'Bir ilişki yavaş sönüyorsa sen ne yaparsın?', opts: ['Konuşuruz', 'Durumu sormayı beklerim', 'Zamanla biter zaten', 'Ben çoktan hayaleti oynuyorum'], scores: [0,1,2,3] },
-  { q: 'Kaç mesajın okunmamış olabilir şu an?', opts: ['0', '1-5', '10-20', 'Saymıyorum bile'], scores: [0,1,2,3] },
-  { q: 'Ghosting hakkında ne düşünüyorsun?', opts: ['Çok kötü bir şey', 'Bazen gerekli olabilir', 'Herkese olur', 'Ben yaptım mı? Bilmiyorum.'], scores: [0,1,2,3] },
+  { q: 'Birinden gelen mesajı okuyunca ne yaparsın?', opts: ['Hemen cevap yazarım','Biraz bekler sonra yazarım','Cevap yazacağım diye düşünürüm, yazmam','Okumadıysam daha iyi'], scores: [0,1,2,3] },
+  { q: 'Sana ilgi gösteren biri sıkıcı gelmeye başlarsa?', opts: ['Nazikçe söylerim','Yavaş yavaş azaltırım','Yokmuşum gibi davranırım','Blok hayatı kolaylaştırır'], scores: [0,1,2,3] },
+  { q: 'Görüşmek istediğin biri "ne zaman?" diye sorarsa?', opts: ['Tarih veririm','"Yakında" derim','"Haber veririm" derim, vermem','Mesajı görmedim sayarım'], scores: [0,1,2,3] },
+  { q: 'Seni ghostlayan biri tekrar yazarsa?', opts: ['Normal konuşurum','Soğuk davranırım','Aynısını yaparım','Zaten blok var'], scores: [0,1,2,3] },
+  { q: 'Bir buluşma planı için kaç kez erteleyebilirsin?', opts: ['Hiç ertelemem','1 kez','2–3 kez','Sonsuz'], scores: [0,1,2,3] },
+  { q: "Story'ni açan birine ne hissediyorsun?", opts: ['Hiçbir şey, normal','Biraz garip','Cevap mı yazmam gerekiyor?','Bloklamalıyım'], scores: [0,1,2,3] },
+  { q: 'Konuşmak istemediğin biriyle ne yaparsın?', opts: ['Dürüstçe anlatırım','Kısa kısa cevap veririm','Ekranı kapatırım','Zaten okumuyorum'], scores: [0,1,2,3] },
+  { q: 'Bir ilişki yavaş sönüyorsa sen ne yaparsın?', opts: ['Konuşuruz','Durumu sormayı beklerim','Zamanla biter zaten','Ben çoktan hayaleti oynuyorum'], scores: [0,1,2,3] },
+  { q: 'Kaç mesajın okunmamış olabilir şu an?', opts: ['0','1–5','10–20','Saymıyorum bile'], scores: [0,1,2,3] },
+  { q: 'Ghosting hakkında ne düşünüyorsun?', opts: ['Çok kötü bir şey','Bazen gerekli olabilir','Herkese olur','Ben yaptım mı? Bilmiyorum.'], scores: [0,1,2,3] },
 ];
 
 let answers = new Array(10).fill(null);
@@ -751,15 +437,15 @@ let personaBuilt = false;
 function buildPersonaTest() {
   personaBuilt = true;
   const area = document.getElementById('persona-test-area');
-  let html = '<div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-bar" style="width:0%"></div></div>';
+  let html = '<div class="progress-wrap"><div class="progress-fill" id="prog-bar" style="width:0%"></div></div>';
   questions.forEach((q, i) => {
-    html += `<div class="question-card fade-up" style="animation-delay:${i*0.04}s">
-      <div class="q-num">SORU ${i+1}/10</div>
+    html += `<div class="question-card">
+      <div class="q-num">SORU ${i+1} / 10</div>
       <div class="q-text">${q.q}</div>
-      ${q.opts.map((o, j) => `<div class="opt" id="opt-${i}-${j}" onclick="selectOpt(${i},${j})">${o}</div>`).join('')}
+      ${q.opts.map((o,j) => `<div class="opt" id="opt-${i}-${j}" onclick="selectOpt(${i},${j})">${o}</div>`).join('')}
     </div>`;
   });
-  html += `<button class="btn btn-red" id="persona-submit" onclick="submitPersona()" disabled>SONUCU GÖR 🧬</button><div style="height:20px"></div>`;
+  html += `<button class="btn btn-red" id="persona-submit" onclick="submitPersona()" disabled style="margin-bottom:8px">SONUCU GÖR 🧬</button><div style="height:16px"></div>`;
   area.innerHTML = html;
 }
 
@@ -769,7 +455,6 @@ function selectOpt(qIdx, optIdx) {
   }
   answers[qIdx] = optIdx;
   document.getElementById(`opt-${qIdx}-${optIdx}`).classList.add('selected');
-
   const answered = answers.filter(a => a !== null).length;
   document.getElementById('prog-bar').style.width = (answered / 10 * 100) + '%';
   document.getElementById('persona-submit').disabled = answered < 10;
@@ -777,48 +462,45 @@ function selectOpt(qIdx, optIdx) {
 
 function submitPersona() {
   const total = answers.reduce((sum, a, i) => sum + (a !== null ? questions[i].scores[a] : 0), 0);
-
   let emoji, type, color, borderColor, desc;
   if (total <= 8) {
-    emoji = '😇'; type = 'Masum Ghostlanan'; color = 'var(--teal)'; borderColor = 'var(--teal-dim)';
-    desc = 'Sen kesinlikle ghostlanan tarafsın. Telefonu elinde tutup bekleyen, okundu bilgisini 10 kere kontrol eden taraf sensin. Üzülme — bu senin dürüstlüğünün ve empati kurabilmesinin işareti. Ama artık biraz "hayalet enerjisi" öğrenme vakti gelebilir. 👀';
+    emoji='😇'; type='Masum Ghostlanan'; color='var(--teal)'; borderColor='rgba(32,201,160,0.15)';
+    desc='Sen kesinlikle ghostlanan tarafsın. Telefonu elinde tutup bekleyen, okundu bilgisini 10 kere kontrol eden taraf sensin. Üzülme — bu senin dürüstlüğünün ve empatin işareti. Ama artık biraz "hayalet enerjisi" öğrenme vakti gelebilir. 👀';
   } else if (total <= 16) {
-    emoji = '🫥'; type = 'Duruma Göre Kaybolur'; color = 'var(--orange)'; borderColor = 'var(--orange-dim)';
-    desc = 'Ne tam ghostlayan ne tam ghostlanan — tam ortadasın. Duruma göre kaybolan, duruma göre cevap veren birisin. Gri alan denen şey tam bu. Aslında herkeste biraz var bu ama sen biraz fazlacasını yaşatıyorsun. Farkında olmak zaten ilk adım sayılır. 🫶';
+    emoji='🫥'; type='Duruma Göre Kaybolur'; color='var(--orange)'; borderColor='rgba(255,159,28,0.12)';
+    desc='Ne tam ghostlayan ne tam ghostlanan — ortadasın. Duruma göre kaybolan, duruma göre cevap veren birisin. Gri alan denen şey tam bu. Farkında olmak zaten ilk adım sayılır. 🫶';
   } else if (total <= 22) {
-    emoji = '👻'; type = 'Kronik Ghostlayan'; color = 'var(--purple-light)'; borderColor = 'var(--purple-dim)';
-    desc = 'Bak, kendine dürüst olmak zordur — ama tebrikler, bunu başardın. Sen zaman zaman hayaleti oynayan tarafsın. Belki savunma mekanizması, belki tembellik, belki "nasıl bitirsem"i bilememek. Her neyse, en azından şimdi biliyorsun. Bu bir başlangıç. 💜';
+    emoji='👻'; type='Kronik Ghostlayan'; color='var(--purple-light)'; borderColor='rgba(124,92,255,0.15)';
+    desc='Bak, kendine dürüst olmak zordur — ama tebrikler, bunu başardın. Sen zaman zaman hayaleti oynayan tarafsın. Belki savunma mekanizması, belki tembellik, belki nasıl bitirsem bilememek. Her neyse, en azından şimdi biliyorsun. 💜';
   } else {
-    emoji = '💀'; type = 'Efsane Hayalet'; color = 'var(--red)'; borderColor = 'var(--red-dim)';
-    desc = 'Tebrikler, sen bir efsanesin. İnsanlar muhtemelen seni "kaybolma ustası" olarak tanımlıyor. Gelen mesajlar sende bir kaygı yaratıyor olabilir — bu tamamen anlaşılır. Ama şunu düşün: karşındaki kişi de bir insan. Belki bir "hayır" demek, bir haftalık sessizlikten daha merhametli olabilir. 🌹';
+    emoji='💀'; type='Efsane Hayalet'; color='var(--red)'; borderColor='rgba(255,77,109,0.15)';
+    desc='Tebrikler, sen bir efsanesin. İnsanlar muhtemelen seni "kaybolma ustası" olarak tanımlıyor. Gelen mesajlar sende kaygı yaratıyor olabilir — bu anlaşılır. Ama şunu düşün: bir "hayır" demek, haftalarca sessiz kalmaktan çok daha merhametli. 🌹';
   }
-
   document.getElementById('persona-test-area').style.display = 'none';
-  const resultArea = document.getElementById('persona-result-area');
-  resultArea.style.display = 'block';
-  resultArea.innerHTML = `
-    <div class="result-screen fade-up">
-      <div class="result-emoji-big">${emoji}</div>
-      <div class="result-type" style="color:${color}">${type}</div>
-      <div class="result-desc-box" style="border-color:${borderColor}; background:${borderColor};">${desc}</div>
-      <div class="result-score">Toplam puan: ${total} / 30</div>
-      <button class="btn btn-outline" onclick="resetPersona()">Testi Tekrarla</button>
-    </div>`;
+  const ra = document.getElementById('persona-result-area');
+  ra.style.display = 'block';
+  ra.innerHTML = `<div class="result-screen fade-up">
+    <div class="result-emoji-big">${emoji}</div>
+    <div class="result-type" style="color:${color}">${type}</div>
+    <div class="result-desc-box" style="border-color:${borderColor};background:${borderColor}">${desc}</div>
+    <div class="result-score">Puan: ${total} / 30</div>
+    <button class="btn btn-outline" onclick="resetPersona()">Testi Tekrarla</button>
+  </div>`;
 }
 
 function resetPersona() {
   answers = new Array(10).fill(null);
   personaBuilt = false;
   document.getElementById('persona-test-area').style.display = 'block';
+  document.getElementById('persona-test-area').innerHTML = '';
   document.getElementById('persona-result-area').style.display = 'none';
   document.getElementById('persona-result-area').innerHTML = '';
   buildPersonaTest();
   document.getElementById('persona-scroll').scrollTop = 0;
 }
 
-// ============ INIT ============
-checkApiKey('ghostlog');
-checkApiKey('lastseen');
+// ── BAŞLANGIÇ ──
+refreshApiUI();
 </script>
 </body>
 </html>
